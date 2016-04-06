@@ -26,9 +26,6 @@ public class CreateAccount extends AppCompatActivity implements View.OnClickList
         setContentView(R.layout.activity_create_account);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(this);
     }
 
     @Override
