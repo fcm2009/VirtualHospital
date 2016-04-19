@@ -24,7 +24,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="Username"
+                android:text="@string/username"
                 android:id="@+id/username"
                 android:layout_margin="5dp" />
 
@@ -32,73 +32,85 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text=""
                 android:id="@+id/username_val"
-                android:layout_margin="5dp" />
+                android:layout_margin="5dp"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="First Name"
+                android:text="@string/first_name"
                 android:id="@+id/first_name"
                 android:layout_margin="5dp" />
 
-            <TextView
-                android:layout_width="wrap_content"
+            <EditText
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text=""
                 android:id="@+id/first_name_val"
-                android:layout_margin="5dp" />
+                android:inputType="textCapWords"
+                android:hint="@string/first_name_placeholder"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="Last Name"
+                android:text="@string/last_name"
                 android:id="@+id/last_name"
                 android:layout_margin="5dp" />
 
-            <TextView
-                android:layout_width="wrap_content"
+            <EditText
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text=""
                 android:id="@+id/last_name_val"
-                android:layout_margin="5dp" />
+                android:inputType="textCapWords"
+                android:hint="@string/last_name_placeholder"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="Email"
+                android:text="@string/email"
                 android:id="@+id/email"
                 android:layout_margin="5dp" />
 
-            <TextView
-                android:layout_width="wrap_content"
+            <EditText
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text=""
                 android:id="@+id/email_val"
-                android:layout_margin="5dp" />
+                android:inputType="textEmailAddress"
+                android:hint="@string/email_placeholder"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="Phone"
+                android:text="@string/phone"
                 android:id="@+id/phone"
                 android:layout_margin="5dp" />
 
-            <TextView
-                android:layout_width="wrap_content"
+            <EditText
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text=""
                 android:id="@+id/phone_val"
-                android:layout_margin="5dp" />
+                android:inputType="phone"
+                android:hint="@string/phone_placeholder"/>
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/save_button"
+                android:id="@+id/save_button"
+                android:onClick="onClick"/>
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/change_password_button"
+                android:id="@+id/change_password_button"/>
         </LinearLayout>
     </ScrollView>
 </RelativeLayout>

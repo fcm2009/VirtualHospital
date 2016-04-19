@@ -8,6 +8,7 @@
     <string name="password_placeholder">Enter Your Password</string>
     <string name="email_placeholder">Enter Your Email</string>
 
+
     <string name="title_activity_login_activity.java">Sign in</string>
     <string name="title_activity_login">Sign in</string>
 
@@ -28,6 +29,32 @@
         completions."
     </string>
 
+    <!-- Strings related to ViewProfile -->
+    <string name="username">Username</string>
+    <string name="first_name">First Name</string>
+    <string name="last_name">Last Name</string>
+    <string name="phone">Phone</string>
+    <string name="first_name_placeholder">Enter Your First Name</string>
+    <string name="last_name_placeholder">Enter Your Last Name</string>
+    <string name="phone_placeholder">Enter Your Phone Number</string>
+    <string name="save_button">save</string>
+    <string name="cancel_button">cancel</string>
+    <string name="change_password_button">change password</string>
+    <string name="same_email">You entered the same email</string>
+
+    <!-- Strings related to UpdateHealthRecord -->
+    <string name="weight">Weight</string>
+    <string name="height">Height</string>
+    <string name="age">Age</string>
+    <string name="chronic_diseases">Chronic Diseases</string>
+    <string name="weight_placeholder">Enter your weight</string>
+    <string name="height_placeholder">Enter your height</string>
+    <string name="age_placeholder">Enter your age</string>
+    <string name="hypertension">Hypertension</string>
+    <string name="diabetes">Diabetes</string>
+    <string name="other">Other</string>
+    <string name="other_text_field">Enter other chronic diseases</string>
+    <string name="medical_history">Medical History</string>
     <!-- global strings -->
     <string name="api_url"></string>
     <string name="title_item_list">Items</string>
@@ -36,4 +63,6 @@
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="title_activity_update_health_record">Update Health Record</string>
+    <string name="title_activity_hnhnnuj">hnhnnuj</string>
 </resources>
