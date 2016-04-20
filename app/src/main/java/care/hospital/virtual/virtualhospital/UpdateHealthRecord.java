@@ -1,8 +1,9 @@
 package care.hospital.virtual.virtualhospital;
 
+import android.content.ComponentName;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -12,14 +13,26 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ListView;
+import org.apache.commons.io.FileUtils;
 
 import com.loopj.android.http.RequestParams;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+
 public class UpdateHealthRecord extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
+
+    private static final int REQUEST_FOR_FILE = 1;
+
+    private Uri fileUri;
+    private ArrayList<File> files = new ArrayList<>();
+    ArrayAdapter <File> adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +49,10 @@ public class UpdateHealthRecord extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        adapter = new ArrayAdapter<>(this, R.layout.textview, files);
+        ListView list = (ListView)findViewById(R.id.file_list);
+        list.setAdapter(adapter);
     }
 
     @Override
@@ -110,5 +127,40 @@ public class UpdateHealthRecord extends AppCompatActivity
             else
                 other_val.setVisibility(View.GONE);
         }
+    }
+
+    @Override
+    public void onClick(View v) {
+        if(v.getId() == findViewById(R.id.add_files).getId()){
+            getFile();
+        }
+    }
+
+    public void getFile(){
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("application/pdf");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(intent, REQUEST_FOR_FILE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(resultCode == RESULT_OK){
+            if(requestCode == REQUEST_FOR_FILE){
+                fileUri = data.getData();
+                addFileToArray(fileUri);
+            }
+        }
+    }
+
+    public void addFileToArray(Uri uri){
+        File newFile = new File(uri.getPath());
+        files.add(newFile);
+        adapter.notifyDataSetChanged();
+        Intent intent = new Intent(Intent.ACTION_SEND, uri);
+        intent.setComponent(new ComponentName("care.hospital.virtual.virtualhospital", "care.hospital.virtual.virtualhospital.SendFile"));
+        startService(intent);
     }
 }
