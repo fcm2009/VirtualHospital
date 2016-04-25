@@ -58,7 +58,6 @@
     <string name="update_button">Update</string>
     <string name="pdf_viewer">No application to view the file</string>
     <!-- global strings -->
-    <string name="api_url"></string>
     <string name="title_item_list">Items</string>
     <string name="title_item_detail">Item Detail</string>
     <string name="title_activity_home">Home</string>
@@ -66,5 +65,7 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="title_activity_update_health_record">Update Health Record</string>
-    <string name="title_activity_hnhnnuj">hnhnnuj</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
