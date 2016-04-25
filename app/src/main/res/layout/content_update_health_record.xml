@@ -143,6 +143,8 @@
                 android:src="@android:drawable/ic_input_add"
                 android:tint="@android:color/white"
                 android:id="@+id/add_files"
+                app:backgroundTint="@color/colorPrimary"
+                android:padding="5dp"
                 android:onClick="onClick"/>
 
             <Button

@@ -1,6 +1,8 @@
 package care.hospital.virtual.virtualhospital;
 
+import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -13,17 +15,27 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
+
 import org.apache.commons.io.FileUtils;
 
 import com.loopj.android.http.RequestParams;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class UpdateHealthRecord extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
@@ -31,8 +43,8 @@ public class UpdateHealthRecord extends AppCompatActivity
     private static final int REQUEST_FOR_FILE = 1;
 
     private Uri fileUri;
-    private ArrayList<File> files = new ArrayList<>();
-    ArrayAdapter <File> adapter;
+    private ArrayList<MedicalReports> files = new ArrayList<>();
+    private ArrayAdapter <MedicalReports> adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +65,12 @@ public class UpdateHealthRecord extends AppCompatActivity
         adapter = new ArrayAdapter<>(this, R.layout.textview, files);
         ListView list = (ListView)findViewById(R.id.file_list);
         list.setAdapter(adapter);
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                viewFile(files.get(position).getReport());
+            }
+        });
     }
 
     @Override
@@ -138,7 +156,7 @@ public class UpdateHealthRecord extends AppCompatActivity
 
     public void getFile(){
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("application/pdf");
+        intent.setType("image/png");
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         startActivityForResult(intent, REQUEST_FOR_FILE);
     }
@@ -150,17 +168,59 @@ public class UpdateHealthRecord extends AppCompatActivity
         if(resultCode == RESULT_OK){
             if(requestCode == REQUEST_FOR_FILE){
                 fileUri = data.getData();
-                addFileToArray(fileUri);
+                try {
+                    addFileToDir(fileUri);
+                }
+                catch(IOException e){}
             }
         }
     }
 
-    public void addFileToArray(Uri uri){
-        File newFile = new File(uri.getPath());
-        files.add(newFile);
+    public void addFileToDir(Uri uri) throws IOException {
+        InputStream in = getContentResolver().openInputStream(uri);
+        String name;
+        try {
+            name = UriParser.getPath(this, uri);
+        }
+        catch(Exception e){}
+        List<String> str = uri.getPathSegments();
+        File dst = new File(getFilesDir().getAbsolutePath(), "Test.png");
+        OutputStream out = openFileOutput(dst.getName(), MODE_WORLD_READABLE);
+
+        // Transfer bytes from in to out
+        byte[] buf = new byte[1024];
+        int len;
+        while ((len = in.read(buf)) > 0) {
+            out.write(buf, 0, len);
+        }
+        in.close();
+        out.close();
+        addFileToArray(dst);
+        sendFile(uri);
+    }
+
+    public void addFileToArray(File file){
+        MedicalReports newReport = new MedicalReports();
+        newReport.setName(file.getName());
+        newReport.setReport(file);
+        files.add(newReport);
         adapter.notifyDataSetChanged();
+    }
+
+    public void sendFile(Uri uri){
         Intent intent = new Intent(Intent.ACTION_SEND, uri);
         intent.setComponent(new ComponentName("care.hospital.virtual.virtualhospital", "care.hospital.virtual.virtualhospital.SendFile"));
-        startService(intent);
+        //startService(intent);
+    }
+
+    public void viewFile(File afile){
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setDataAndType(Uri.fromFile(afile), "image/png");
+        try {
+            startActivity(intent);
+        }
+        catch (ActivityNotFoundException e){
+            Toast.makeText(this, R.string.pdf_viewer, Toast.LENGTH_LONG).show();
+        }
     }
 }

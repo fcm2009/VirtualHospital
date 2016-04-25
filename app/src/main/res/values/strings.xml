@@ -56,6 +56,7 @@
     <string name="other_text_field">Enter other chronic diseases</string>
     <string name="medical_history">Medical History</string>
     <string name="update_button">Update</string>
+    <string name="pdf_viewer">No application to view the file</string>
     <!-- global strings -->
     <string name="api_url"></string>
     <string name="title_item_list">Items</string>
