@@ -30,6 +30,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".ViewProfile" />
+        <activity android:name=".Appointment" />
         <activity
             android:name=".UpdateHealthRecord"
             android:label="@string/title_activity_update_health_record"
@@ -38,7 +39,6 @@
             android:name=".SendFile"
             android:enabled="true"
             android:exported="true" />
-
         <activity
             android:name=".LoginActivity"
             android:label="@string/title_activity_login"></activity>

@@ -1,3 +1,4 @@
+//TODO:change email to username
 package care.hospital.virtual.virtualhospital;
 
 import android.animation.Animator;
@@ -158,7 +159,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onSuccess(int statusCode, Header[] headers, String responseString) {
                 SharedPreferences.Editor sharedPreferencesEditor = getSharedPreferences("token", Context.MODE_PRIVATE).edit();
-                sharedPreferencesEditor.putString("token", responseString);
+                sharedPreferencesEditor.putString("access_token", responseString);
                 sharedPreferencesEditor.apply();
 
                 finish();
@@ -166,8 +167,16 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                showProgress(false);
-                Snackbar.make(findViewById(android.R.id.content), responseString, Toast.LENGTH_LONG);
+                //TODO:fix snackbar
+                if(statusCode == 401) {
+                    showProgress(false);
+                    Snackbar.make(findViewById(android.R.id.content), "Username or Password are not Correct", Toast.LENGTH_LONG);
+                    Log.d("Error", "Username or Password are not Correct");
+                } else {
+                    showProgress(false);
+                    Snackbar.make(findViewById(android.R.id.content), "Server is not Reachable, Check your internet connection", Toast.LENGTH_LONG);
+                    Log.d("Error", "Server is not Reachable, Check your internet connection");
+                }
             }
         });
     }
