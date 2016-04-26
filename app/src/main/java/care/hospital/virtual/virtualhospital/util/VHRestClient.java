@@ -12,7 +12,7 @@ import care.hospital.virtual.virtualhospital.R;
 public class VHRestClient {
 
     private static AsyncHttpClient client = new AsyncHttpClient();
-    private final static String baseURL = "http://10.0.2.2:8080/";
+    private final static String baseURL = "http://10.80.24.212:8080/";
 
     public static void get(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
         client.get(baseURL + url, params, responseHandler);
