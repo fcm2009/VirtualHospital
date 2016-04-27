@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.widget.Toast;
 
+import java.io.File;
 import java.net.URISyntaxException;
 
 /**
@@ -14,15 +15,12 @@ import java.net.URISyntaxException;
  */
 public class UriParser {
 
-    public static String getPath(Context context, Uri uri) throws URISyntaxException {
+    public static String getName(Context context, Uri uri) {
+
         if ("content".equalsIgnoreCase(uri.getScheme())) {
             Cursor cursor;
-
             try {
                 cursor = context.getContentResolver().query(uri, null, null, null, null);
-                /*String str [] = new String[10];
-                for(int i = 0; i < cursor.getColumnCount(); i++)
-                    str[i] = cursor.getColumnName(i);*/
                 int cursorIndex = cursor.getColumnIndex("_display_name");
 
                 if (cursor.getCount() > 0) {
@@ -34,6 +32,11 @@ public class UriParser {
                 Toast.makeText(context, e.getMessage(), Toast.LENGTH_LONG).show();
             }
         }
+
+        else if ("file".equalsIgnoreCase(uri.getScheme()))
+            return new File(uri.getPath()).getName();
+
+        Toast.makeText(context, R.string.inappropriate_file, Toast.LENGTH_LONG).show();
         return null;
     }
 

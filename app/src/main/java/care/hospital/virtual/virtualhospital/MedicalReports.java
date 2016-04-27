@@ -39,6 +39,6 @@ public class MedicalReports {
     }
 
     public String toString(){
-        return report.getName();
+        return getName();
     }
 }

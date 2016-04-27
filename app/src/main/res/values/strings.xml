@@ -56,7 +56,17 @@
     <string name="other_text_field">Enter other chronic diseases</string>
     <string name="medical_history">Medical History</string>
     <string name="update_button">Update</string>
-    <string name="pdf_viewer">No application to view the file</string>
+    <string name="pdf_viewer">There is no application to view the file</string>
+    <string name="inappropriate_file">The item chosen is inappropriate file</string>
+    <string name="send_file">Upload File</string>
+    <string name="waiting">Please wait...</string>
+    <string name="success_upload">File uploaded successfully</string>
+    <string name="failed_upload">Problem occurred while uploading\nDo you want to resend the file?</string>
+    <string name="resend_button">Resend</string>
+    <string name="cancel_dialog_button">Cancel</string>
+    <string name="download">Downloading...</string>
+    <string name="success_download">File downloaded successfully</string>
+    
     <!-- global strings -->
     <string name="title_item_list">Items</string>
     <string name="title_item_detail">Item Detail</string>

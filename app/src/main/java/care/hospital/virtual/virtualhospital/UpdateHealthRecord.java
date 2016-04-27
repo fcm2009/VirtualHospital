@@ -1,11 +1,16 @@
 package care.hospital.virtual.virtualhospital;
 
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -20,11 +25,14 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.apache.commons.io.FileUtils;
 
+import com.loopj.android.http.FileAsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
+import com.loopj.android.http.TextHttpResponseHandler;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -37,6 +45,9 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+import care.hospital.virtual.virtualhospital.util.VHRestClient;
+import cz.msebera.android.httpclient.Header;
+
 public class UpdateHealthRecord extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
 
@@ -45,6 +56,12 @@ public class UpdateHealthRecord extends AppCompatActivity
     private Uri fileUri;
     private ArrayList<MedicalReports> files = new ArrayList<>();
     private ArrayAdapter <MedicalReports> adapter;
+    private ProgressDialog progress;
+    private String token;
+    private File afile;
+    private RequestParams params;
+    private boolean check;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,13 +79,16 @@ public class UpdateHealthRecord extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        SharedPreferences auth = getSharedPreferences("token", 0);
+        token = auth.getString("access_token", "");
+
         adapter = new ArrayAdapter<>(this, R.layout.textview, files);
         ListView list = (ListView)findViewById(R.id.file_list);
         list.setAdapter(adapter);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                viewFile(files.get(position).getReport());
+                itemClicked(position);
             }
         });
     }
@@ -178,13 +198,10 @@ public class UpdateHealthRecord extends AppCompatActivity
 
     public void addFileToDir(Uri uri) throws IOException {
         InputStream in = getContentResolver().openInputStream(uri);
-        String name;
-        try {
-            name = UriParser.getPath(this, uri);
-        }
-        catch(Exception e){}
-        List<String> str = uri.getPathSegments();
-        File dst = new File(getFilesDir().getAbsolutePath(), "Test.png");
+        String name = UriParser.getName(this, uri);
+        if (name == null)
+            getFile();
+        File dst = new File(getFilesDir().getAbsolutePath(), name);
         OutputStream out = openFileOutput(dst.getName(), MODE_WORLD_READABLE);
 
         // Transfer bytes from in to out
@@ -196,7 +213,7 @@ public class UpdateHealthRecord extends AppCompatActivity
         in.close();
         out.close();
         addFileToArray(dst);
-        sendFile(uri);
+        sendFile(dst);
     }
 
     public void addFileToArray(File file){
@@ -207,10 +224,100 @@ public class UpdateHealthRecord extends AppCompatActivity
         adapter.notifyDataSetChanged();
     }
 
-    public void sendFile(Uri uri){
-        Intent intent = new Intent(Intent.ACTION_SEND, uri);
-        intent.setComponent(new ComponentName("care.hospital.virtual.virtualhospital", "care.hospital.virtual.virtualhospital.SendFile"));
-        //startService(intent);
+    public void sendFile(File file){
+        afile = file;
+        progress = ProgressDialog.show(this, getString(R.string.send_file), getString(R.string.waiting), true);
+        params = new RequestParams();
+        try{
+            params.put("access_token", token);
+            params.put("new_medical_file", file);
+            VHRestClient.post("medicalHistory/upload", params, new TextHttpResponseHandler() {
+                @Override
+                public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
+                    progress.dismiss();
+                    AlertDialog.Builder resend = new AlertDialog.Builder(UpdateHealthRecord.this);
+                    resend.setTitle(getString(R.string.send_file));
+                    resend.setMessage(getString(R.string.failed_upload));
+                    resend.setCancelable(false);
+                    resend.setPositiveButton(R.string.resend_button, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                            sendFile(afile);
+                        }
+                    });
+
+                    resend.setNegativeButton(R.string.cancel_dialog_button, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+                    AlertDialog resendDialog = resend.create();
+                    resendDialog.show();
+                }
+
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, String responseString) {
+                    progress.dismiss();
+                    Snackbar.make(findViewById(android.R.id.content), R.string.success_upload, Snackbar.LENGTH_LONG).show();
+
+
+                }
+            });
+        }
+        catch(FileNotFoundException e){
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public void itemClicked(int position){
+        MedicalReports report = files.get(position);
+        File file = report.getReport();
+        if(file != null)
+            viewFile(file);
+        else{
+            file = searchForFile(report.getName());
+            if(file != null){
+                report.setReport(file);
+                viewFile(file);
+            }
+            else
+                retrieveFile(position);
+        }
+    }
+
+    public File searchForFile(String fileName){
+        File [] dirFiles = getFilesDir().listFiles();
+        for(int i = 0; i < dirFiles.length; i++)
+            if(dirFiles[i].getName().equals(fileName))
+                return dirFiles[i];
+        return null;
+    }
+
+    public File retrieveFile (int position){
+        check = true;
+        MedicalReports report = files.get(position);
+        afile = new File(getFilesDir(), report.getName());
+        params = new RequestParams();
+        params.put("access_token", token);
+        params.put("retrieve_medical_file", report.getId());
+        Toast.makeText(this, R.string.download, Toast.LENGTH_LONG).show();
+        while(check) {
+            VHRestClient.post("medicalHistory/getById", params, new FileAsyncHttpResponseHandler(afile) {
+                @Override
+                public void onFailure(int statusCode, Header[] headers, Throwable throwable, File file) {
+
+                }
+
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, File file) {
+                    Snackbar.make(findViewById(android.R.id.content), R.string.success_download, Snackbar.LENGTH_LONG).show();
+                    check = false;
+                }
+            });
+        }
+        return afile;
     }
 
     public void viewFile(File afile){
