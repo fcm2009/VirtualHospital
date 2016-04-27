@@ -4,9 +4,27 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
+import android.widget.ListView;
+import android.widget.Spinner;
+import android.widget.TextView;
+
+import com.loopj.android.http.JsonHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import care.hospital.virtual.virtualhospital.util.JSONArrayAdapter;
+import care.hospital.virtual.virtualhospital.util.VHRestClient;
+import cz.msebera.android.httpclient.Header;
 
 
 /**
@@ -17,14 +35,14 @@ import android.view.ViewGroup;
  * Use the {@link MakeAppointment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MakeAppointment extends Fragment {
+public class MakeAppointment extends Fragment implements View.OnClickListener, AdapterView.OnItemSelectedListener {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
+    private static final String ARG_PARAM1 = "access_token";
     private static final String ARG_PARAM2 = "param2";
 
     // TODO: Rename and change types of parameters
-    private String mParam1;
+    private String access_token;
     private String mParam2;
 
     private OnFragmentInteractionListener mListener;
@@ -42,10 +60,10 @@ public class MakeAppointment extends Fragment {
      * @return A new instance of fragment MakeAppointment.
      */
     // TODO: Rename and change types and number of parameters
-    public static MakeAppointment newInstance(String param1, String param2) {
+    public static MakeAppointment newInstance(String access_token, String param2) {
         MakeAppointment fragment = new MakeAppointment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
+        args.putString(ARG_PARAM1, access_token);
         args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
@@ -55,9 +73,80 @@ public class MakeAppointment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
+            access_token = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+
+        RequestParams params = new RequestParams();
+        params.put(ARG_PARAM1, access_token);
+        VHRestClient.post("appointment/listDoctors", params, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                super.onSuccess(statusCode, headers, response);
+            }
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, final JSONArray response) {
+                Spinner doctorsSpinner = (Spinner) getView().findViewById(R.id.chooseDoctorSpinner);
+                BaseAdapter spinnerAdapter = new BaseAdapter() {
+                    private JSONArray data = response;
+                    private Context context = getContext();
+
+                    @Override
+                    public int getCount() {
+                        return data.length();
+                    }
+
+                    @Override
+                    public Object getItem(int position) {
+                        try {
+                            return  data.getJSONObject(position);
+                        } catch (JSONException e) {
+                            Log.e(getClass().getName(), e.getMessage());
+                            return null;
+                        }
+                    }
+
+                    @Override
+                    public long getItemId(int position) {
+                        return 0;
+                    }
+
+                    @Override
+                    public View getView(int position, View convertView, ViewGroup parent) {
+                        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                        if(convertView == null) {
+                            convertView = inflater.inflate(android.R.layout.simple_spinner_item, parent, false);
+                        }
+                        TextView doctorView = (TextView) convertView;
+                        doctorView.setText(getItem(position).toString());
+                        return convertView;
+                    }
+
+                };
+                doctorsSpinner.setAdapter(spinnerAdapter);
+            }
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, String responseString) {
+                super.onSuccess(statusCode, headers, responseString);
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                super.onFailure(statusCode, headers, throwable, errorResponse);
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
+                super.onFailure(statusCode, headers, throwable, errorResponse);
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
+                super.onFailure(statusCode, headers, responseString, throwable);
+            }
+        });
     }
 
     @Override
@@ -104,5 +193,20 @@ public class MakeAppointment extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
+    }
+
+    @Override
+    public void onClick(View v) {
+
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+
     }
 }

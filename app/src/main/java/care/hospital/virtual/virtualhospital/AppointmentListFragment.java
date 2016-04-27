@@ -6,14 +6,18 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+import com.loopj.android.http.FileAsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.io.File;
 
 import care.hospital.virtual.virtualhospital.util.JSONArrayAdapter;
 import care.hospital.virtual.virtualhospital.util.VHRestClient;
@@ -28,7 +32,7 @@ import cz.msebera.android.httpclient.Header;
  * Use the {@link AppointmentListFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class AppointmentListFragment extends Fragment {
+public class AppointmentListFragment extends Fragment implements OnClickListener {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "access_token";
@@ -71,7 +75,7 @@ public class AppointmentListFragment extends Fragment {
         }
 
         RequestParams params = new RequestParams();
-        params.put("access_token", access_token);
+        params.put(ARG_PARAM1, access_token);
         VHRestClient.post("appointment/list", params, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
@@ -83,6 +87,11 @@ public class AppointmentListFragment extends Fragment {
                 JSONArrayAdapter appointmentsAdapter = new JSONArrayAdapter(AppointmentListFragment.this.getContext(), R.layout.appointment_layout, response);
                 ListView appointmentsList = (ListView) getView().findViewById(R.id.appointmentsList);
                 appointmentsList.setAdapter(appointmentsAdapter);
+            }
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, String responseString) {
+                super.onSuccess(statusCode, headers, responseString);
             }
 
             @Override
@@ -99,11 +108,6 @@ public class AppointmentListFragment extends Fragment {
             public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
                 super.onFailure(statusCode, headers, responseString, throwable);
             }
-
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, String responseString) {
-                super.onSuccess(statusCode, headers, responseString);
-            }
         });
     }
 
@@ -111,7 +115,9 @@ public class AppointmentListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_appointment_list, container, false);
+        View layout = inflater.inflate(R.layout.fragment_appointment_list, container, false);
+        layout.findViewById(R.id.makeAppointmentButton).setOnClickListener(this);
+        return layout;
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -151,5 +157,10 @@ public class AppointmentListFragment extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
+    }
+
+    @Override
+    public void onClick(View v) {
+        mListener.onFragmentInteraction(null);
     }
 }

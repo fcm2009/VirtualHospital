@@ -10,7 +10,9 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
-public class Appointment extends AppCompatActivity implements View.OnClickListener,  AppointmentListFragment.OnFragmentInteractionListener, MakeAppointment.OnFragmentInteractionListener {
+public class Appointment extends AppCompatActivity implements AppointmentListFragment.OnFragmentInteractionListener, MakeAppointment.OnFragmentInteractionListener {
+
+    private String token;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,7 +20,7 @@ public class Appointment extends AppCompatActivity implements View.OnClickListen
         setContentView(R.layout.activity_appointment);
 
         SharedPreferences sharedPreferences= getSharedPreferences("token", Context.MODE_PRIVATE);
-        String token = sharedPreferences.getString("access_token", null);
+        token = sharedPreferences.getString("access_token", null);
 
         AppointmentListFragment appointmentListFragment = AppointmentListFragment.newInstance(token, null);
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -28,19 +30,11 @@ public class Appointment extends AppCompatActivity implements View.OnClickListen
     }
 
     @Override
-    public void onClick(View v) {
-        SharedPreferences sharedPreferences= getSharedPreferences("token", Context.MODE_PRIVATE);
-        String token = sharedPreferences.getString("access_token", null);
-
+    public void onFragmentInteraction(Uri uri) {
         MakeAppointment makeAppointmentFragment = MakeAppointment.newInstance(token, null);
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction appointmentListTransaction = fragmentManager.beginTransaction();
         appointmentListTransaction.replace(android.R.id.content, makeAppointmentFragment);
         appointmentListTransaction.commit();
-    }
-
-    @Override
-    public void onFragmentInteraction(Uri uri) {
-
     }
 }
