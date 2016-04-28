@@ -25,7 +25,7 @@ public class Appointment extends AppCompatActivity implements AppointmentListFra
         AppointmentListFragment appointmentListFragment = AppointmentListFragment.newInstance(token, null);
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction appointmentListTransaction = fragmentManager.beginTransaction();
-        appointmentListTransaction.add(android.R.id.content, appointmentListFragment);
+        appointmentListTransaction.replace(android.R.id.content, appointmentListFragment);
         appointmentListTransaction.commit();
     }
 

@@ -3,6 +3,8 @@ package care.hospital.virtual.virtualhospital;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -20,26 +22,28 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.PopupMenu;
+import android.widget.TextView;
 import android.widget.Toast;
 
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.apache.commons.io.FileUtils;
 
 import com.loopj.android.http.FileAsyncHttpResponseHandler;
-import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.TextHttpResponseHandler;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.List;
 
 import care.hospital.virtual.virtualhospital.util.VHRestClient;
 import cz.msebera.android.httpclient.Header;
@@ -55,8 +59,8 @@ public class UpdateHealthRecord extends AppCompatActivity
     private ProgressDialog progress;
     private String token;
     private File afile;
+    private RequestParams params;
     private boolean check;
-    private int order;
 
 
     @Override
@@ -78,61 +82,15 @@ public class UpdateHealthRecord extends AppCompatActivity
         SharedPreferences auth = getSharedPreferences("token", 0);
         token = auth.getString("access_token", "");
 
-        adapter = new FileAdapter<>(this, R.layout.textview, files);
+        adapter = new ArrayAdapter<>(this, R.layout.textview, files);
         ListView list = (ListView)findViewById(R.id.file_list);
         list.setAdapter(adapter);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                showPopup(view, position);
+                itemClicked(position);
             }
         });
-
-        RequestParams params = new RequestParams();
-        params.put("access_token", token);
-        VHRestClient.post("medicalHistory/list", params, new JsonHttpResponseHandler() {
-                @Override
-                public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
-                    JSONObject object;
-                    MedicalReports insreport;
-                    for (int i = 0; i < response.length(); i++) {
-                        insreport = new MedicalReports();
-                        try {
-                            object = response.getJSONObject(i);
-                            insreport.setId(object.getInt("id"));
-                            insreport.setName(object.getString("title"));
-                            files.add(insreport);
-                        } catch (JSONException e) {
-                        }
-                    }
-                    adapter.notifyDataSetChanged();
-                }
-
-                @Override
-                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                    super.onSuccess(statusCode, headers, response);
-                }
-
-                @Override
-                public void onSuccess(int statusCode, Header[] headers, String responseString) {
-                    super.onSuccess(statusCode, headers, responseString);
-                }
-
-                @Override
-                public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                    Snackbar.make(findViewById(android.R.id.content), R.string.delete_error + responseString, Snackbar.LENGTH_LONG).show();
-                }
-
-                @Override
-                public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
-                    super.onFailure(statusCode, headers, throwable, errorResponse);
-                }
-
-                @Override
-                public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                    super.onFailure(statusCode, headers, throwable, errorResponse);
-                }
-            });
     }
 
     @Override
@@ -197,6 +155,17 @@ public class UpdateHealthRecord extends AppCompatActivity
         return true;
     }
 
+    public void onCheckedboxClicked(View view) {
+        if(view.getId() == findViewById(R.id.other).getId()){
+            EditText other_val = (EditText) findViewById(R.id.other_val);
+            CheckBox other = (CheckBox) view;
+            if(other.isChecked())
+                other_val.setVisibility(View.VISIBLE);
+
+            else
+                other_val.setVisibility(View.GONE);
+        }
+    }
 
     @Override
     public void onClick(View v) {
@@ -207,7 +176,7 @@ public class UpdateHealthRecord extends AppCompatActivity
 
     public void getFile(){
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("application/pdf");
+        intent.setType("image/png");
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         startActivityForResult(intent, REQUEST_FOR_FILE);
     }
@@ -258,19 +227,17 @@ public class UpdateHealthRecord extends AppCompatActivity
     public void sendFile(File file){
         afile = file;
         progress = ProgressDialog.show(this, getString(R.string.send_file), getString(R.string.waiting), true);
-        RequestParams params = new RequestParams();
+        params = new RequestParams();
         try{
             params.put("access_token", token);
-            params.put("new_medical_file", afile);
+            params.put("new_medical_file", file);
             VHRestClient.post("medicalHistory/upload", params, new TextHttpResponseHandler() {
                 @Override
                 public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
                     progress.dismiss();
-                    Snackbar.make(findViewById(android.R.id.content), R.string.success_upload, Snackbar.LENGTH_LONG).show();
-
-                    /*AlertDialog.Builder resend = new AlertDialog.Builder(UpdateHealthRecord.this);
+                    AlertDialog.Builder resend = new AlertDialog.Builder(UpdateHealthRecord.this);
                     resend.setTitle(getString(R.string.send_file));
-                    resend.setMessage(getString(R.string.failed_upload) + "\n" + responseString + "\n" + getString(R.string.failed_upload2));
+                    resend.setMessage(getString(R.string.failed_upload));
                     resend.setCancelable(false);
                     resend.setPositiveButton(R.string.resend_button, new DialogInterface.OnClickListener() {
                         @Override
@@ -287,13 +254,15 @@ public class UpdateHealthRecord extends AppCompatActivity
                         }
                     });
                     AlertDialog resendDialog = resend.create();
-                    resendDialog.show();*/
+                    resendDialog.show();
                 }
 
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, String responseString) {
                     progress.dismiss();
                     Snackbar.make(findViewById(android.R.id.content), R.string.success_upload, Snackbar.LENGTH_LONG).show();
+
+
                 }
             });
         }
@@ -313,10 +282,8 @@ public class UpdateHealthRecord extends AppCompatActivity
                 report.setReport(file);
                 viewFile(file);
             }
-            else {
-                file = retrieveFile(position);
-                viewFile(file);
-            }
+            else
+                retrieveFile(position);
         }
     }
 
@@ -332,135 +299,35 @@ public class UpdateHealthRecord extends AppCompatActivity
         check = true;
         MedicalReports report = files.get(position);
         afile = new File(getFilesDir(), report.getName());
-        RequestParams params = new RequestParams();
+        params = new RequestParams();
         params.put("access_token", token);
-        params.put("id", report.getId());
+        params.put("retrieve_medical_file", report.getId());
         Toast.makeText(this, R.string.download, Toast.LENGTH_LONG).show();
-        VHRestClient.post("medicalHistory/getById", params, new FileAsyncHttpResponseHandler(afile) {
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, File file) {
-                Snackbar.make(findViewById(android.R.id.content), R.string.fail_download, Snackbar.LENGTH_LONG).show();
-            }
+        while(check) {
+            VHRestClient.post("medicalHistory/getById", params, new FileAsyncHttpResponseHandler(afile) {
+                @Override
+                public void onFailure(int statusCode, Header[] headers, Throwable throwable, File file) {
 
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, File file) {
-                Snackbar.make(findViewById(android.R.id.content), R.string.success_download, Snackbar.LENGTH_LONG).show();
-            }
-        });
+                }
+
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, File file) {
+                    Snackbar.make(findViewById(android.R.id.content), R.string.success_download, Snackbar.LENGTH_LONG).show();
+                    check = false;
+                }
+            });
+        }
         return afile;
     }
 
     public void viewFile(File afile){
         Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setDataAndType(Uri.fromFile(afile), "application/pdf");
+        intent.setDataAndType(Uri.fromFile(afile), "image/png");
         try {
             startActivity(intent);
         }
         catch (ActivityNotFoundException e){
             Toast.makeText(this, R.string.pdf_viewer, Toast.LENGTH_LONG).show();
         }
-    }
-
-    public void deleteFileFromServer(int position){
-        order = position;
-        MedicalReports report = files.get(order);
-        if(report.getId() > 0) {
-            RequestParams params = new RequestParams();
-            params.put("access_token", token);
-            params.put("id", report.getId());
-            VHRestClient.post("medicalHistory/removeById", params, new TextHttpResponseHandler() {
-                @Override
-                public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                    Snackbar.make(findViewById(android.R.id.content), R.string.delete_error + responseString, Snackbar.LENGTH_LONG).show();
-                }
-
-                @Override
-                public void onSuccess(int statusCode, Header[] headers, String responseString) {
-                    deleteFileFromDir(order);
-                }
-            });
-        }
-
-        else
-            deleteFileFromDir(position);
-    }
-
-    public void deleteFileFromDir(int position){
-        String name = files.get(position).getName();
-        File file = searchForFile(name);
-        if(file == null){
-            deleteFileFromArray(position);
-            Toast.makeText(this, R.string.success_delete, Toast.LENGTH_LONG).show();
-        }
-
-            //Toast.makeText(this, R.string.file_not_found, Toast.LENGTH_LONG).show();
-        else{
-            if(file.delete()){
-                file.delete();
-                deleteFileFromArray(position);
-                Toast.makeText(this, R.string.success_delete, Toast.LENGTH_LONG).show();
-            }
-            else
-                Toast.makeText(this, R.string.fail_delete, Toast.LENGTH_LONG).show();
-        }
-    }
-
-    public void deleteFileFromArray(int position){
-        files.remove(position);
-        adapter.notifyDataSetChanged();
-    }
-
-    public void showPopup(View v, int position){
-        order = position;
-        PopupMenu popup = new PopupMenu(this, v);
-        Menu menu = popup.getMenu();
-        menu.add(R.string.open_menuitem);
-        menu.add(R.string.delete_menuitem);
-        //menu.add(R.string.save_menuitem);
-        menu.getItem(0).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                itemClicked(order);
-                return false;
-            }
-        });
-        menu.getItem(1).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                showDeleteDialog(order);
-                return false;
-            }
-        });
-        /*menu.getItem(2).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                return false;
-            }
-        });*/
-        popup.show();
-    }
-
-    public void showDeleteDialog(int position){
-        order = position;
-        AlertDialog.Builder delete= new AlertDialog.Builder(UpdateHealthRecord.this);
-        delete.setTitle(getString(R.string.delete_file));
-        delete.setMessage(getString(R.string.delete_message));
-        delete.setCancelable(false);
-        delete.setPositiveButton(R.string.delete_yes_button, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-                deleteFileFromServer(order);
-            }
-        });
-
-        delete.setNegativeButton(R.string.delete_no_button, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
-        AlertDialog deleteDialog = delete.create();
-        deleteDialog.show();
     }
 }
