@@ -1,5 +1,6 @@
 package care.hospital.virtual.virtualhospital;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -8,10 +9,12 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.EditText;
 
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
+import com.loopj.android.http.TextHttpResponseHandler;
 
 import org.json.JSONObject;
 
@@ -20,12 +23,24 @@ import cz.msebera.android.httpclient.Header;
 
 public class CreateAccount extends AppCompatActivity implements View.OnClickListener {
 
+    private EditText weight;
+    private EditText height;
+    private EditText age;
+    private EditText other_val;
+    private CheckBox diabetes;
+    private CheckBox hypertension;
+    private CheckBox other;
+
+    private SharedPreferences.Editor editor;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_account);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        editor = getSharedPreferences("profile_info", 0).edit();
     }
 
     @Override
@@ -55,16 +70,70 @@ public class CreateAccount extends AppCompatActivity implements View.OnClickList
         EditText emailEditText = (EditText) findViewById(R.id.email_placeholder);
         EditText passwordEditText = (EditText) findViewById(R.id.password_editText);
 
+        weight = (EditText) findViewById(R.id.weight_val);
+        height = (EditText) findViewById(R.id.height_val);
+        age = (EditText) findViewById(R.id.age_val);
+        other_val = (EditText) findViewById(R.id.other_val);
+        diabetes = (CheckBox) findViewById(R.id.diabetes);
+        hypertension = (CheckBox) findViewById(R.id.hypertension);
+        other = (CheckBox) findViewById(R.id.other);
+
         RequestParams accountRequest = new RequestParams();
-        accountRequest.put("name", nameEditText.getText().toString());
+        accountRequest.put("username", nameEditText.getText().toString());
         accountRequest.put("email", emailEditText.getText().toString());
         accountRequest.put("password", passwordEditText.getText().toString());
+        accountRequest.put("weight", weight.getText().toString());
+        accountRequest.put("height", height.getText().toString());
+        accountRequest.put("age", age.getText().toString());
+        accountRequest.put("diabetes", diabetes.isChecked());
+        accountRequest.put("hypertension", hypertension.isChecked());
+        if(other.isChecked())
+            accountRequest.put("chronicDiseases", other_val.getText().toString());
+        else
+            accountRequest.put("chronicDiseases", "");
 
-        VHRestClient.post("/create_account", accountRequest, new JsonHttpResponseHandler() {
+        VHRestClient.post("account/create", accountRequest, new TextHttpResponseHandler() {
             @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
+                Snackbar.make(findViewById(android.R.id.content), R.string.error + responseString, Snackbar.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, String responseString) {
+                editor.putString("weight", weight.getText().toString());
+                editor.putString("height", height.getText().toString());
+                editor.putString("age", age.getText().toString());
+                editor.putBoolean("diabetes", diabetes.isChecked());
+                editor.putBoolean("hypertension", hypertension.isChecked());
+                editor.putBoolean("other", other.isChecked());
+                if(other.isChecked())
+                    editor.putString("other_val", other_val.getText().toString());
+                else
+                    editor.putString("other_val", "");
+
+                editor.commit();
                 Snackbar.make(findViewById(android.R.id.content), R.string.account_created_successfully, Snackbar.LENGTH_LONG).show();
-                //TODO: specify message for each status code
+
+
+            }
+        });
+
+        /*@Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                editor.putString("weight", weight.getText().toString());
+                editor.putString("height", height.getText().toString());
+                editor.putString("age", age.getText().toString());
+                editor.putBoolean("diabetes", diabetes.isChecked());
+                editor.putBoolean("hypertension", hypertension.isChecked());
+                editor.putBoolean("other", other.isChecked());
+                if(other.isChecked())
+                    editor.putString("other_val", other_val.getText().toString());
+                else
+                    editor.putString("other_val", "");
+
+                editor.commit();
+                Snackbar.make(findViewById(android.R.id.content), R.string.account_created_successfully, Snackbar.LENGTH_LONG).show();
+
             }
 
             @Override
@@ -72,7 +141,19 @@ public class CreateAccount extends AppCompatActivity implements View.OnClickList
                 Snackbar.make(findViewById(android.R.id.content), R.string.error, Snackbar.LENGTH_LONG).show();
                 //TODO: specify message for each status code
             }
-        });
+        });*/
+    }
+
+    public void onCheckedboxClicked(View view) {
+        if(view.getId() == findViewById(R.id.other).getId()){
+            other_val = (EditText) findViewById(R.id.other_val);
+            other = (CheckBox) view;
+            if(other.isChecked())
+                other_val.setVisibility(View.VISIBLE);
+
+            else
+                other_val.setVisibility(View.GONE);
+        }
     }
 
 }

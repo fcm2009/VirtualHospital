@@ -25,7 +25,9 @@ public class UriParser {
 
                 if (cursor.getCount() > 0) {
                     cursor.moveToNext();
-                    return cursor.getString(cursorIndex);
+                    String name = cursor.getString(cursorIndex);
+                    cursor.close();
+                    return name;
                 }
             }
             catch (Exception e) {
