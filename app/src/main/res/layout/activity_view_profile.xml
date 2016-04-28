@@ -99,94 +99,6 @@
                 android:inputType="phone"
                 android:hint="@string/phone_placeholder"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="@string/weight"
-                android:padding="5dp"/>
-
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/weight_val"
-                android:inputType="numberDecimal"
-                android:hint="@string/weight_placeholder"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="@string/height"
-                android:padding="5dp"/>
-
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/height_val"
-                android:inputType="numberDecimal"
-                android:hint="@string/height_placeholder"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="@string/age"
-                android:padding="5dp"/>
-
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/age_val"
-                android:inputType="number"
-                android:hint="@string/age_placeholder"/>
-
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="@string/chronic_diseases"
-                android:padding="5dp"/>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/diabetes"
-                    android:id="@+id/diabetes"
-                    android:padding="5dp"/>
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/hypertension"
-                    android:id="@+id/hypertension"
-                    android:padding="5dp"/>
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/other"
-                    android:id="@+id/other"
-                    android:onClick="onCheckedboxClicked"
-                    android:padding="5dp"/>
-
-            </LinearLayout>
-
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/other_val"
-                android:hint="@string/other_text_field"
-                android:inputType="text"
-                android:visibility="gone" />
-
-
             <Button
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -194,6 +106,11 @@
                 android:id="@+id/save_button"
                 android:onClick="onClick"/>
 
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/change_password_button"
+                android:id="@+id/change_password_button"/>
         </LinearLayout>
     </ScrollView>
 </RelativeLayout>

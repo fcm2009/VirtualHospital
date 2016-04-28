@@ -25,12 +25,6 @@
             android:layout_height="wrap_content"
             android:baselineAligned="false">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="@string/name"
-                android:padding="5dp"/>
 
             <EditText
                 android:layout_width="match_parent"
@@ -39,13 +33,6 @@
                 android:hint="@string/name_placeholder"
                 android:id="@+id/name_editText" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="@string/email"
-                android:padding="5dp"/>
-
             <EditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -53,107 +40,13 @@
                 android:id="@+id/email_placeholder"
                 android:hint="@string/email_placeholder" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="@string/password"
-                android:padding="5dp"/>
-
             <EditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPassword"
                 android:id="@+id/password_editText"
-                android:hint="@string/password_placeholder" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="@string/weight"
-                android:padding="5dp"/>
-
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/weight_val"
-                android:inputType="numberDecimal"
-                android:hint="@string/weight_placeholder"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="@string/height"
-                android:padding="5dp"/>
-
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/height_val"
-                android:inputType="numberDecimal"
-                android:hint="@string/height_placeholder"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="@string/age"
-                android:padding="5dp"/>
-
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/age_val"
-                android:inputType="number"
-                android:hint="@string/age_placeholder"/>
-
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="@string/chronic_diseases"
-                android:padding="5dp"/>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/diabetes"
-                    android:id="@+id/diabetes"
-                    android:padding="5dp"/>
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/hypertension"
-                    android:id="@+id/hypertension"
-                    android:padding="5dp"/>
-
-                <CheckBox
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/other"
-                    android:id="@+id/other"
-                    android:onClick="onCheckedboxClicked"
-                    android:padding="5dp"/>
-
-            </LinearLayout>
-
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/other_val"
-                android:hint="@string/other_text_field"
-                android:inputType="text"
-                android:visibility="gone" />
-
+                android:text="@string/password_placeholder"
+                android:onClick="onClick" />
 
             <Button
                 android:id="@+id/create_account"
