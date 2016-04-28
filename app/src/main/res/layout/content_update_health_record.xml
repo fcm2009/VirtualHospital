@@ -27,133 +27,25 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="@string/weight"
-                    android:padding="5dp"/>
-
-                <EditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/weight_val"
-                    android:inputType="numberDecimal"
-                    android:hint="@string/weight_placeholder"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="@string/height"
-                    android:padding="5dp"/>
-
-                <EditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/height_val"
-                    android:inputType="numberDecimal"
-                    android:hint="@string/height_placeholder"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="@string/age"
-                    android:padding="15dp"/>
-
-                <EditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/age_val"
-                    android:inputType="number"
-                    android:hint="@string/age_placeholder"/>
-            </LinearLayout>
-
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="@string/chronic_diseases"
-                android:padding="5dp"/>
-
-            <CheckBox
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/diabetes"
-                android:id="@+id/diabetes"/>
-
-            <CheckBox
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/hypertension"
-                android:id="@+id/hypertension"/>
-
-            <CheckBox
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/other"
-                android:id="@+id/other"
-                android:onClick="onCheckedboxClicked"/>
-
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/other_val"
-                android:hint="@string/other_text_field"
-                android:inputType="text"
-                android:visibility="gone" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="@string/medical_history"
-                android:padding="5dp"/>
-
             <ListView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/file_list">
 
             </ListView>
-
-            <android.support.design.widget.FloatingActionButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:src="@android:drawable/ic_input_add"
-                android:tint="@android:color/white"
-                android:id="@+id/add_files"
-                app:backgroundTint="@color/colorPrimary"
-                android:padding="5dp"
-                android:onClick="onClick"/>
-
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/update_button"
-                android:text="@string/update_button"/>
-
         </LinearLayout>
     </ScrollView>
+
+    <android.support.design.widget.FloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:src="@android:drawable/ic_input_add"
+        android:tint="@android:color/white"
+        android:id="@+id/add_files"
+        app:backgroundTint="@color/colorPrimary"
+        android:padding="5dp"
+        android:layout_alignParentBottom="true"
+        android:onClick="onClick"/>
 
 </RelativeLayout>
