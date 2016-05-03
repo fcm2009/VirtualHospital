@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
+import com.loopj.android.http.TextHttpResponseHandler;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -41,21 +42,13 @@ import cz.msebera.android.httpclient.Header;
  * Use the {@link AppointmentListFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class AppointmentListFragment extends Fragment implements OnClickListener, AdapterView.OnItemLongClickListener {
-    // TODO: Rename parameter arguments, choose names that match
+public class AppointmentListFragment extends Fragment implements OnClickListener, AdapterView.OnItemClickListener {
+
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "access_token";
-    private static final String ARG_PARAM2 = "param2";
 
-    private  static final int CANCELLED = 0;
     private  static final int PENDING = 1;
     private  static final int CONFIRMED = 2;
-
-    // TODO: Rename and change types of parameters
-    private String access_token;
-    private String mParam2;
-
-    private JSONArray appointmentsList;
 
     private OnFragmentInteractionListener mListener;
 
@@ -71,12 +64,10 @@ public class AppointmentListFragment extends Fragment implements OnClickListener
      * @param param2 Parameter 2.
      * @return A new instance of fragment AppointmentListFragment.
      */
-    // TODO: Rename and change types and number of parameters
-    public static AppointmentListFragment newInstance(String access_token, String param2) {
+    public static AppointmentListFragment newInstance(String access_token) {
         AppointmentListFragment fragment = new AppointmentListFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, access_token);
-        args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
     }
@@ -84,33 +75,16 @@ public class AppointmentListFragment extends Fragment implements OnClickListener
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            access_token = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+        fetchAppointmentsData();
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View layout = inflater.inflate(R.layout.fragment_appointment_list, container, false);
-        layout.findViewById(R.id.makeAppointmentButton).setOnClickListener(this);
-
-        ListView appointmentsListView = (ListView) layout.findViewById(R.id.appointmentsList);
-        appointmentsListView.setOnItemLongClickListener(this);
-
+    private void fetchAppointmentsData() {
         RequestParams params = new RequestParams();
+        String access_token = getArguments().getString(ARG_PARAM1);
         params.put(ARG_PARAM1, access_token);
         VHRestClient.post("appointment/list", params, new JsonHttpResponseHandler() {
             @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                super.onSuccess(statusCode, headers, response);
-            }
-
-            @Override
             public void onSuccess(int statusCode, Header[] headers, final JSONArray response) {
-                appointmentsList = response;
                 ListView appointmentsList = (ListView) getView().findViewById(R.id.appointmentsList);
                 appointmentsList.setAdapter(new BaseAdapter() {
                     @Override
@@ -146,38 +120,25 @@ public class AppointmentListFragment extends Fragment implements OnClickListener
                         }
                         RelativeLayout appointmentLayout = (RelativeLayout) convertView;
 
-                        int status;
-                        Date time;
-                        String doctor;
                         try {
-                            status = response.getJSONObject(position).getInt("status");
-                            JSONObject slot = response.getJSONObject(position).getJSONObject("Slot");
-                            doctor = slot.getString("DoctorId");
+                            JSONObject appointment = response.getJSONObject(position);
+                            int status = appointment.getInt("status");
+                            JSONObject slot = appointment.getJSONObject("Slot");
+                            String time = formatTime(slot.getString("time"));
+                            String doctor = slot.getString("DoctorId");
 
-                            SimpleDateFormat sdfParser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-                            SimpleDateFormat sdiFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-                            time = sdfParser.parse(slot.getString("time"));
-                            String timeString = sdiFormatter.format(time);
 
-                            TextView appointmentStatus = (TextView) appointmentLayout.findViewById(R.id.appointmentStatus);
-                            if(status == CANCELLED) {
-                                appointmentStatus.setText(R.string.appointment_status_canceled);
-                            } else if(status == PENDING) {
-                                appointmentStatus.setText(R.string.appointment_status_pending);
+                            if(status == PENDING) {
+                                ((TextView) appointmentLayout.findViewById(R.id.appointmentStatus)).setText(R.string.appointment_status_pending);
                             } else {
-                                appointmentStatus.setText(R.string.appointment_status_confirmed);
+                                ((TextView) appointmentLayout.findViewById(R.id.appointmentStatus)).setText(R.string.appointment_status_confirmed);
                             }
 
-                            TextView appointmentTime = (TextView) appointmentLayout.findViewById(R.id.appointmentTime);
-                            appointmentTime.setText(timeString);
-
-                            TextView appointmentDoctor = (TextView) appointmentLayout.findViewById(R.id.appointmentDoctor);
-                            appointmentDoctor.setText(doctor);
+                            ((TextView) appointmentLayout.findViewById(R.id.appointmentTime)).setText(time);
+                            ((TextView) appointmentLayout.findViewById(R.id.appointmentDoctor)).setText(doctor);
 
                         } catch (JSONException e) {
                             Log.e(this.getClass().getName(), e.getMessage());
-                        } catch (ParseException pe) {
-                            Log.e(this.getClass().getName(), pe.getMessage());
                         }
                         return appointmentLayout;
                     }
@@ -186,34 +147,39 @@ public class AppointmentListFragment extends Fragment implements OnClickListener
             }
 
             @Override
-            public void onSuccess(int statusCode, Header[] headers, String responseString) {
-                super.onSuccess(statusCode, headers, responseString);
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                super.onFailure(statusCode, headers, throwable, errorResponse);
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
-                super.onFailure(statusCode, headers, throwable, errorResponse);
-            }
-
-            @Override
             public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
                 super.onFailure(statusCode, headers, responseString, throwable);
             }
         });
+    }
+
+    private String formatTime(String timeString) {
+        try {
+            SimpleDateFormat sdfParser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+            SimpleDateFormat sdiFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            Date time = sdfParser.parse(timeString);
+            return sdiFormatter.format(time);
+        } catch (ParseException e) {
+            Log.e(getClass().getName(), e.getMessage());
+            return null;
+        }
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        View layout = inflater.inflate(R.layout.fragment_appointment_list, container, false);
+        ListView appointmentsListView = (ListView) layout.findViewById(R.id.appointmentsList);
+        appointmentsListView.setOnItemClickListener(this);
+        layout.findViewById(R.id.makeAppointmentButton).setOnClickListener(this);
 
         return layout;
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
+    @Override
+    public void onResume() {
+        super.onResume();
+        fetchAppointmentsData();
     }
 
     @Override
@@ -234,7 +200,7 @@ public class AppointmentListFragment extends Fragment implements OnClickListener
     }
 
     @Override
-    public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+    public void onItemClick(final AdapterView<?> parent, View view, final int position, long id) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle(R.string.cancel_appointment);
         builder.setMessage(R.string.cancel_appointment_message);
@@ -243,11 +209,17 @@ public class AppointmentListFragment extends Fragment implements OnClickListener
             public void onClick(DialogInterface dialog, int which) {
                 try {
                     RequestParams params = new RequestParams();
+                    String access_token = getArguments().getString(ARG_PARAM1);
+                    int appointmentId = ((JSONObject) parent.getItemAtPosition(position)).getInt("id");
                     params.put("access_token", access_token);
-                    params.put("appointmentId", appointmentsList.getJSONObject(position).getInt("id"));
-                    VHRestClient.post("appointment/cancel", params, new JsonHttpResponseHandler() {
+                    params.put("appointmentId", appointmentId);
+
+                    VHRestClient.post("appointment/cancel", params, new TextHttpResponseHandler() {
+
                         @Override
                         public void onSuccess(int statusCode, Header[] headers, String responseString) {
+                            fetchAppointmentsData();
+                            ((BaseAdapter) parent.getAdapter()).notifyDataSetChanged();
                             Snackbar.make(getView(), responseString, Snackbar.LENGTH_LONG).show();
                         }
 
@@ -262,7 +234,6 @@ public class AppointmentListFragment extends Fragment implements OnClickListener
             }
         });
         builder.create().show();
-        return false;
     }
 
     /**

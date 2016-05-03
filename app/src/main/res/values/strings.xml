@@ -17,9 +17,9 @@
     <string name="error">error</string>
 
     <!-- Strings related to login -->
-    <string name="prompt_email">Email</string>
+    <string name="prompt_username">Username</string>
     <string name="prompt_password">Password</string>
-    <string name="action_sign_in">Sign in</string>
+    <string name="create_account">Create Account</string>
     <string name="action_sign_in_short">Sign in</string>
     <string name="error_invalid_email">This email address is invalid</string>
     <string name="error_invalid_password">This password is too short</string>
@@ -79,7 +79,7 @@
     <string name="file_not_found">File is not found</string>
     <string name="success_delete">File deleted successfully</string>
     <string name="fail_delete">There is problem in deletion process</string>
-    
+
     <!-- global strings -->
     <string name="title_item_list">Items</string>
     <string name="title_item_detail">Item Detail</string>
@@ -92,6 +92,18 @@
     <!-- Strings related to MakeAppointment -->
     <string name="choose_doctor_text_view">Choose Doctor:</string>
     <string name="submit_appointment">Submit</string>
+    <string name="available">Available</string>
+    <string name="booked">Booked</string>
+    <string name="appointment_created_successfully">Appointment Created Successfully</string>
+    <string name="cancel_appointment">Cancel Appointment</string>
+    <string name="cancel_appointment_message">Do You Want to Cancel the Appointment ?</string>
+    <string name="cancel_appointment_button">Submit</string>
+    <string name="appointment_status_pending">Pending</string>
+    <string name="appointment_status_confirmed">Confirmed</string>
+    <string name="login">Login</string>
+    <string name="make_appointment">Make Appointment</string>
+    <string name="make_appointment_message">Are You Sure You Want to Reserve This Time Slot ?</string>
+    <string name="make_appointment_button">Submit</string>
 
 
 </resources>

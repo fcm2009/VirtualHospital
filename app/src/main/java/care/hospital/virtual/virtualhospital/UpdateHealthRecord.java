@@ -41,6 +41,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 
+import care.hospital.virtual.virtualhospital.util.UriParser;
 import care.hospital.virtual.virtualhospital.util.VHRestClient;
 import cz.msebera.android.httpclient.Header;
 
@@ -207,7 +208,7 @@ public class UpdateHealthRecord extends AppCompatActivity
 
     public void getFile(){
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("application/pdf");
+        intent.setType("image/png");
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         startActivityForResult(intent, REQUEST_FOR_FILE);
     }
@@ -352,7 +353,7 @@ public class UpdateHealthRecord extends AppCompatActivity
 
     public void viewFile(File afile){
         Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setDataAndType(Uri.fromFile(afile), "application/pdf");
+        intent.setDataAndType(Uri.fromFile(afile), "image/png");
         try {
             startActivity(intent);
         }

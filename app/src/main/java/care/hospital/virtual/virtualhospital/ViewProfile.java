@@ -141,10 +141,9 @@ public class ViewProfile extends AppCompatActivity implements View.OnClickListen
                                 profile_info_editor.putString("Last Name", lastName.getText().toString());
                                 profile_info_editor.putString("Email", email.getText().toString());
                                 profile_info_editor.putString("Phone", phone.getText().toString());
-
+                                Snackbar.make(findViewById(android.R.id.content), "Profile Updated Sucesfully", Snackbar.LENGTH_LONG).show();
                             }
                         });
-
 
 
                 profile_info_editor.putString("weight", weight.getText().toString());

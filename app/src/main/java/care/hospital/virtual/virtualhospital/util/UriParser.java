@@ -1,4 +1,4 @@
-package care.hospital.virtual.virtualhospital;
+package care.hospital.virtual.virtualhospital.util;
 
 import android.app.Activity;
 import android.content.Context;
@@ -9,6 +9,8 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.net.URISyntaxException;
+
+import care.hospital.virtual.virtualhospital.R;
 
 /**
  * Created by semsem on 24/04/16.

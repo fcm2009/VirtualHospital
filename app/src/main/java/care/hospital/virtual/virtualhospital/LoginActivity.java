@@ -113,9 +113,9 @@ public class LoginActivity extends AppCompatActivity {
         return password.length() > 4;
     }
 
-    private void login(String email, String password) {
+    private void login(String username, String password) {
         RequestParams params = new RequestParams();
-        params.put("username", email);
+        params.put("username", username);
         params.put("password", password);
 
         VHRestClient.post("account/login", params, new TextHttpResponseHandler() {
@@ -127,17 +127,16 @@ public class LoginActivity extends AppCompatActivity {
 
                 finish();
             }
-
             @Override
             public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
                 //TODO:fix snackbar
                 if(statusCode == 401) {
                     showProgress(false);
-                    Snackbar.make(findViewById(android.R.id.content), "Username or Password are not Correct", Toast.LENGTH_LONG);
+                    Snackbar.make(findViewById(android.R.id.content), "Username or Password are not Correct", Snackbar.LENGTH_LONG).show();
                     Log.d("Error", "Username or Password are not Correct");
                 } else {
                     showProgress(false);
-                    Snackbar.make(findViewById(android.R.id.content), "Server is not Reachable, Check your internet connection", Toast.LENGTH_LONG);
+                    Snackbar.make(findViewById(android.R.id.content), "Server is not Reachable, Check your internet connection", Snackbar.LENGTH_LONG).show();
                     Log.d("Error", "Server is not Reachable, Check your internet connection");
                 }
             }
