@@ -269,9 +269,8 @@ public class UpdateHealthRecord extends AppCompatActivity
                 @Override
                 public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
                     progress.dismiss();
-                    Snackbar.make(findViewById(android.R.id.content), R.string.success_upload, Snackbar.LENGTH_LONG).show();
 
-                    /*AlertDialog.Builder resend = new AlertDialog.Builder(UpdateHealthRecord.this);
+                    AlertDialog.Builder resend = new AlertDialog.Builder(UpdateHealthRecord.this);
                     resend.setTitle(getString(R.string.send_file));
                     resend.setMessage(getString(R.string.failed_upload) + "\n" + responseString + "\n" + getString(R.string.failed_upload2));
                     resend.setCancelable(false);
@@ -290,7 +289,7 @@ public class UpdateHealthRecord extends AppCompatActivity
                         }
                     });
                     AlertDialog resendDialog = resend.create();
-                    resendDialog.show();*/
+                    resendDialog.show();
                 }
 
                 @Override
