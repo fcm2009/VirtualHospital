@@ -1,14 +1,20 @@
 package care.hospital.virtual.virtualhospital;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -18,10 +24,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.PopupMenu;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -35,31 +43,28 @@ import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.TextHttpResponseHandler;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
 
-import care.hospital.virtual.virtualhospital.models.MedicalReports;
-import care.hospital.virtual.virtualhospital.util.FileAdapter;
 import care.hospital.virtual.virtualhospital.util.UriParser;
 import care.hospital.virtual.virtualhospital.util.VHRestClient;
 import cz.msebera.android.httpclient.Header;
 
 public class UpdateHealthRecord extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
+        implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
 
     private static final int REQUEST_FOR_FILE = 1;
+    private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    private static String[] PERMISSIONS_STORAGE = {
+        Manifest.permission.READ_EXTERNAL_STORAGE,
+        Manifest.permission.WRITE_EXTERNAL_STORAGE
+    };
 
-    private Uri fileUri;
-    private ArrayList<MedicalReports> files = new ArrayList<>();
-    private ArrayAdapter <MedicalReports> adapter;
     private ProgressDialog progress;
     private String token;
-    private File afile;
-    private boolean check;
-    private int order;
 
 
     @Override
@@ -78,70 +83,71 @@ public class UpdateHealthRecord extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        verifyStoragePermissions(this);
+
         SharedPreferences auth = getSharedPreferences("token", 0);
-        token = auth.getString("access_token", "");
+        token = auth.getString("access_token", null);
 
-        adapter = new FileAdapter<>(this, R.layout.textview, files);
         ListView list = (ListView)findViewById(R.id.file_list);
-        list.setAdapter(adapter);
-        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                showPopup(view, position);
-            }
-        });
+        list.setOnItemClickListener(this);
+        list.setOnItemLongClickListener(this);
 
-        RequestParams params = new RequestParams();
-        params.put("access_token", token);
-        VHRestClient.post("medicalHistory/list", params, new JsonHttpResponseHandler() {
-                @Override
-                public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
-                    JSONObject object;
-                    MedicalReports insreport;
-                    for (int i = 0; i < response.length(); i++) {
-                        insreport = new MedicalReports();
-                        try {
-                            object = response.getJSONObject(i);
-                            insreport.setId(object.getInt("id"));
-                            insreport.setName(object.getString("title"));
-                            files.add(insreport);
-                        } catch (JSONException e) {
-                        }
-                    }
-                    adapter.notifyDataSetChanged();
-                }
-
-                @Override
-                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                    super.onSuccess(statusCode, headers, response);
-                }
-
-                @Override
-                public void onSuccess(int statusCode, Header[] headers, String responseString) {
-                    super.onSuccess(statusCode, headers, responseString);
-                }
-
-                @Override
-                public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                    Snackbar.make(findViewById(android.R.id.content), R.string.delete_error + responseString, Snackbar.LENGTH_LONG).show();
-                }
-
-                @Override
-                public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
-                    super.onFailure(statusCode, headers, throwable, errorResponse);
-                }
-
-                @Override
-                public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                    super.onFailure(statusCode, headers, throwable, errorResponse);
-                }
-            });
+        fetchMedicalHistoriesMeta();
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
+    protected void onActivityResult(int requestCode, int resultCode, Intent result) {
+        super.onActivityResult(requestCode, resultCode, result);
+
+        if(resultCode == RESULT_OK) {
+            if(requestCode == REQUEST_FOR_FILE) {
+                try {
+                    File medicalHistory = cacheFile(result.getData());
+                    sendMedicalHistory(medicalHistory);
+                } catch(IOException e) {
+                    Log.e(getClass().getName(), e.getMessage());
+                }
+            }
+        }
     }
+
+    public static void verifyStoragePermissions(Activity activity) {
+        // Check if we have write permission
+        int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            // We don't have permission so prompt the user
+            ActivityCompat.requestPermissions(
+                    activity,
+                    PERMISSIONS_STORAGE,
+                    REQUEST_EXTERNAL_STORAGE
+            );
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_EXTERNAL_STORAGE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+
+                } else {
+                    finish();
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
     public void onBackPressed() {
@@ -200,72 +206,80 @@ public class UpdateHealthRecord extends AppCompatActivity
         return true;
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    @Override
-    public void onClick(View v) {
-        if(v.getId() == findViewById(R.id.add_files).getId()){
-            getFile();
-        }
-    }
-
-    public void getFile(){
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("image/png");
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        startActivityForResult(intent, REQUEST_FOR_FILE);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if(resultCode == RESULT_OK){
-            if(requestCode == REQUEST_FOR_FILE){
-                fileUri = data.getData();
-                try {
-                    addFileToDir(fileUri);
-                }
-                catch(IOException e){}
-            }
-        }
-    }
-
-    public void addFileToDir(Uri uri) throws IOException {
-        InputStream in = getContentResolver().openInputStream(uri);
-        String name = UriParser.getName(this, uri);
-        if (name == null)
-            getFile();
-        File dst = new File(getFilesDir().getAbsolutePath(), name);
-        OutputStream out = openFileOutput(dst.getName(), MODE_WORLD_READABLE);
-
-        // Transfer bytes from in to out
-        byte[] buf = new byte[1024];
-        int len;
-        while ((len = in.read(buf)) > 0) {
-            out.write(buf, 0, len);
-        }
-        in.close();
-        out.close();
-        addFileToArray(dst);
-        sendFile(dst);
-    }
-
-    public void addFileToArray(File file){
-        MedicalReports newReport = new MedicalReports();
-        newReport.setName(file.getName());
-        newReport.setReport(file);
-        files.add(newReport);
-        adapter.notifyDataSetChanged();
-    }
-
-    public void sendFile(File file){
-        afile = file;
-        progress = ProgressDialog.show(this, getString(R.string.send_file), getString(R.string.waiting), true);
+    private void fetchMedicalHistoriesMeta() {
         RequestParams params = new RequestParams();
-        try{
+        params.put("access_token", token);
+        VHRestClient.post("medicalHistory/list", params, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, final JSONArray response) {
+                ListView list = (ListView) findViewById(R.id.file_list);
+                list.setAdapter(new BaseAdapter() {
+                    @Override
+                    public int getCount() {
+                        return response.length();
+                    }
+
+                    @Override
+                    public Object getItem(int position) {
+                        try {
+                            return response.getJSONObject(position);
+                        } catch (JSONException e) {
+                            Log.e(getClass().getName(), e.getMessage());
+                            return null;
+                        }
+                    }
+
+                    @Override
+                    public long getItemId(int position) {
+                        return 0;
+                    }
+
+                    @Override
+                    public View getView(int position, View convertView, ViewGroup parent) {
+                        if(convertView == null) {
+                            convertView = getLayoutInflater().inflate(R.layout.row, parent, false);
+                        }
+                        ImageView icon = (ImageView) convertView.findViewById(R.id.icon);
+                        icon.setImageResource(R.drawable.pdf3);
+
+                        TextView label = (TextView) convertView.findViewById(R.id.filename);
+                        try {
+                            label.setText(((JSONObject) getItem(position)).getString("title"));
+                        } catch (JSONException e) {
+                            Log.e(getClass().getName(), e.getMessage());
+                        }
+
+                        return convertView;
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
+                Snackbar.make(findViewById(android.R.id.content), R.string.data_fetch_error + responseString, Snackbar.LENGTH_LONG).show();
+            }
+
+        });
+    }
+
+    public void sendMedicalHistory(final File file) {
+        progress = ProgressDialog.show(this, getString(R.string.send_file), getString(R.string.waiting), true);
+        try {
+            RequestParams params = new RequestParams();
+            params.setForceMultipartEntityContentType(true);
             params.put("access_token", token);
-            params.put("new_medical_file", afile);
+            params.put("new_medical_file", file);
             VHRestClient.post("medicalHistory/upload", params, new TextHttpResponseHandler() {
+
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, String responseString) {
+                    progress.dismiss();
+                    fetchMedicalHistoriesMeta();
+                    Toast.makeText(UpdateHealthRecord.this, R.string.success_upload, Toast.LENGTH_LONG).show();
+                }
+
                 @Override
                 public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
                     progress.dismiss();
@@ -278,7 +292,7 @@ public class UpdateHealthRecord extends AppCompatActivity
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.dismiss();
-                            sendFile(afile);
+                            sendMedicalHistory(file);
                         }
                     });
 
@@ -291,70 +305,39 @@ public class UpdateHealthRecord extends AppCompatActivity
                     AlertDialog resendDialog = resend.create();
                     resendDialog.show();
                 }
-
-                @Override
-                public void onSuccess(int statusCode, Header[] headers, String responseString) {
-                    progress.dismiss();
-                    Snackbar.make(findViewById(android.R.id.content), R.string.success_upload, Snackbar.LENGTH_LONG).show();
-                }
             });
         }
-        catch(FileNotFoundException e){
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+        catch(FileNotFoundException e) {
+            Log.e(getClass().getName(), e.getMessage());
         }
     }
 
-    public void itemClicked(int position){
-        MedicalReports report = files.get(position);
-        File file = report.getReport();
-        if(file != null)
-            viewFile(file);
-        else{
-            file = searchForFile(report.getName());
-            if(file != null){
-                report.setReport(file);
-                viewFile(file);
-            }
-            else {
-                file = retrieveFile(position);
-                viewFile(file);
-            }
-        }
-    }
-
-    public File searchForFile(String fileName){
-        File [] dirFiles = getFilesDir().listFiles();
-        for(int i = 0; i < dirFiles.length; i++)
-            if(dirFiles[i].getName().equals(fileName))
-                return dirFiles[i];
-        return null;
-    }
-
-    public File retrieveFile (int position){
-        check = true;
-        MedicalReports report = files.get(position);
-        afile = new File(getFilesDir(), report.getName());
+    public void retrieveMedicalHistory(int id) {
         RequestParams params = new RequestParams();
         params.put("access_token", token);
-        params.put("id", report.getId());
+        params.put("id", id);
+
+        File destinationDir = new File(Environment.getExternalStorageDirectory() +
+                "/" + Environment.DIRECTORY_DOWNLOADS);
         Toast.makeText(this, R.string.download, Toast.LENGTH_LONG).show();
-        VHRestClient.post("medicalHistory/getById", params, new FileAsyncHttpResponseHandler(afile) {
+        VHRestClient.post("medicalHistory/getById", params, new FileAsyncHttpResponseHandler(destinationDir) {
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, File response) {
+                viewMedicalHistory(response);
+                Toast.makeText(UpdateHealthRecord.this, R.string.success_download, Toast.LENGTH_LONG).show();
+            }
+
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable throwable, File file) {
                 Snackbar.make(findViewById(android.R.id.content), R.string.fail_download, Snackbar.LENGTH_LONG).show();
             }
-
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, File file) {
-                Snackbar.make(findViewById(android.R.id.content), R.string.success_download, Snackbar.LENGTH_LONG).show();
-            }
         });
-        return afile;
     }
 
-    public void viewFile(File afile){
+    public void viewMedicalHistory(File file){
         Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setDataAndType(Uri.fromFile(afile), "image/png");
+        intent.setDataAndType(Uri.fromFile(file), "image/png");
         try {
             startActivity(intent);
         }
@@ -363,88 +346,27 @@ public class UpdateHealthRecord extends AppCompatActivity
         }
     }
 
-    public void deleteFileFromServer(int position){
-        order = position;
-        MedicalReports report = files.get(order);
-        if(report.getId() > 0) {
-            RequestParams params = new RequestParams();
-            params.put("access_token", token);
-            params.put("id", report.getId());
-            VHRestClient.post("medicalHistory/removeById", params, new TextHttpResponseHandler() {
-                @Override
-                public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                    Snackbar.make(findViewById(android.R.id.content), R.string.delete_error + responseString, Snackbar.LENGTH_LONG).show();
-                }
+    public void deleteMedicalHistory(int id){
+        RequestParams params = new RequestParams();
+        params.put("access_token", token);
+        params.put("id", id);
+        VHRestClient.post("medicalHistory/removeById", params, new TextHttpResponseHandler() {
 
-                @Override
-                public void onSuccess(int statusCode, Header[] headers, String responseString) {
-                    deleteFileFromDir(order);
-                }
-            });
-        }
-
-        else
-            deleteFileFromDir(position);
-    }
-
-    public void deleteFileFromDir(int position){
-        String name = files.get(position).getName();
-        File file = searchForFile(name);
-        if(file == null){
-            deleteFileFromArray(position);
-            Toast.makeText(this, R.string.success_delete, Toast.LENGTH_LONG).show();
-        }
-
-            //Toast.makeText(this, R.string.file_not_found, Toast.LENGTH_LONG).show();
-        else{
-            if(file.delete()){
-                file.delete();
-                deleteFileFromArray(position);
-                Toast.makeText(this, R.string.success_delete, Toast.LENGTH_LONG).show();
-            }
-            else
-                Toast.makeText(this, R.string.fail_delete, Toast.LENGTH_LONG).show();
-        }
-    }
-
-    public void deleteFileFromArray(int position){
-        files.remove(position);
-        adapter.notifyDataSetChanged();
-    }
-
-    public void showPopup(View v, int position){
-        order = position;
-        PopupMenu popup = new PopupMenu(this, v);
-        Menu menu = popup.getMenu();
-        menu.add(R.string.open_menuitem);
-        menu.add(R.string.delete_menuitem);
-        //menu.add(R.string.save_menuitem);
-        menu.getItem(0).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                itemClicked(order);
-                return false;
+            public void onSuccess(int statusCode, Header[] headers, String responseString) {
+                Toast.makeText(UpdateHealthRecord.this, responseString, Toast.LENGTH_LONG).show();
+                fetchMedicalHistoriesMeta();
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
+                Toast.makeText(UpdateHealthRecord.this, R.string.data_fetch_error + responseString, Toast.LENGTH_LONG).show();
             }
         });
-        menu.getItem(1).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                showDeleteDialog(order);
-                return false;
-            }
-        });
-        /*menu.getItem(2).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                return false;
-            }
-        });*/
-        popup.show();
     }
 
-    public void showDeleteDialog(int position){
-        order = position;
-        AlertDialog.Builder delete= new AlertDialog.Builder(UpdateHealthRecord.this);
+    public void showDeleteDialog(final int id){
+        AlertDialog.Builder delete = new AlertDialog.Builder(UpdateHealthRecord.this);
         delete.setTitle(getString(R.string.delete_file));
         delete.setMessage(getString(R.string.delete_message));
         delete.setCancelable(false);
@@ -452,7 +374,7 @@ public class UpdateHealthRecord extends AppCompatActivity
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
-                deleteFileFromServer(order);
+                deleteMedicalHistory(id);
             }
         });
 
@@ -464,5 +386,75 @@ public class UpdateHealthRecord extends AppCompatActivity
         });
         AlertDialog deleteDialog = delete.create();
         deleteDialog.show();
+    }
+
+    private File cacheFile(Uri uri) throws IOException {
+        InputStream inputStream = getContentResolver().openInputStream(uri);
+        String fileName = UriParser.getName(this, uri);
+        return cacheFile(inputStream, fileName);
+    }
+
+    private File cacheFile(File input) {
+        try {
+            FileInputStream inputStream = new FileInputStream(input);
+            return cacheFile(inputStream, input.getName());
+        } catch (FileNotFoundException e) {
+            Log.e(getClass().getName(), e.getMessage());
+            return null;
+        }
+    }
+
+    private File cacheFile(InputStream inputStream, String fileName) {
+        try {
+            File outputFile = File.createTempFile(fileName, null, getCacheDir());
+            FileOutputStream outputStream = new FileOutputStream(outputFile);
+
+            byte[] buf = new byte[1024];
+            int len;
+            while ((len = inputStream.read(buf)) > 0) {
+                outputStream.write(buf, 0, len);
+            }
+            inputStream.close();
+            outputStream.close();
+
+            return outputFile;
+        } catch (FileNotFoundException e) {
+            Log.e(getClass().getName(), e.getMessage());
+            return null;
+        } catch (IOException e) {
+            Log.e(getClass().getName(), e.getMessage());
+            return null;
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/png");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(intent, REQUEST_FOR_FILE);
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        int itemId = -1;
+        try {
+            itemId = ((JSONObject) parent.getItemAtPosition(position)).getInt("id");
+        } catch (JSONException e) {
+            Log.e(getClass().getName(), e.getMessage());
+        }
+        retrieveMedicalHistory(itemId);
+    }
+
+    @Override
+    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+        int itemId = -1;
+        try {
+            itemId = ((JSONObject) parent.getItemAtPosition(position)).getInt("id");
+        } catch (JSONException e) {
+            Log.e(getClass().getName(), e.getMessage());
+        }
+        showDeleteDialog(itemId);
+        return true;
     }
 }

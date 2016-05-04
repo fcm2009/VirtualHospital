@@ -71,7 +71,7 @@
     <string name="open_menuitem">Open</string>
     <string name="delete_menuitem">Delete</string>
     <string name="save_menuitem">Save</string>
-    <string name="delete_error">An error occurred </string>
+    <string name="data_fetch_error">An error occurred </string>
     <string name="delete_file">Delete File</string>
     <string name="delete_message">This file will be deleted permanently.\nIf you want to save it, click on save.\nDo you want to delete it?</string>
     <string name="delete_yes_button">Yes</string>

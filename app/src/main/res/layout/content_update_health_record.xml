@@ -18,23 +18,11 @@
         android:id="@+id/recordList">
     </android.support.v7.widget.ListViewCompat>
 
-    <ScrollView
+    <ListView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <ListView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/file_list">
-
-            </ListView>
-        </LinearLayout>
-    </ScrollView>
+        android:layout_height="wrap_content"
+        android:id="@+id/file_list">
+    </ListView>
 
     <android.support.design.widget.FloatingActionButton
         android:layout_width="wrap_content"

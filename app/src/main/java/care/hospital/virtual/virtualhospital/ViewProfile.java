@@ -5,12 +5,10 @@ import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.TextHttpResponseHandler;
 
@@ -132,7 +130,7 @@ public class ViewProfile extends AppCompatActivity implements View.OnClickListen
                 VHRestClient.post("account/update", param, new TextHttpResponseHandler() {
                             @Override
                             public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                                Snackbar.make(findViewById(android.R.id.content), R.string.delete_error + responseString, Snackbar.LENGTH_LONG).show();
+                                Snackbar.make(findViewById(android.R.id.content), R.string.data_fetch_error + responseString, Snackbar.LENGTH_LONG).show();
                             }
 
                             @Override
