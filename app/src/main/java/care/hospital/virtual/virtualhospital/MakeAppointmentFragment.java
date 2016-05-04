@@ -22,7 +22,6 @@ import android.widget.TwoLineListItem;
 
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
-import com.loopj.android.http.TextHttpResponseHandler;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,12 +38,12 @@ import cz.msebera.android.httpclient.Header;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link MakeAppointment.OnFragmentInteractionListener} interface
+ * {@link MakeAppointmentFragment.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link MakeAppointment#newInstance} factory method to
+ * Use the {@link MakeAppointmentFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MakeAppointment extends Fragment implements AdapterView.OnItemSelectedListener, AdapterView.OnItemClickListener {
+public class MakeAppointmentFragment extends Fragment implements AdapterView.OnItemSelectedListener, AdapterView.OnItemClickListener {
 
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "access_token";
@@ -53,7 +52,7 @@ public class MakeAppointment extends Fragment implements AdapterView.OnItemSelec
 
     private OnFragmentInteractionListener mListener;
 
-    public MakeAppointment() {
+    public MakeAppointmentFragment() {
         // Required empty public constructor
     }
 
@@ -62,10 +61,10 @@ public class MakeAppointment extends Fragment implements AdapterView.OnItemSelec
      * this fragment using the provided parameters.
      *
      * @param param1 Parameter 1.
-     * @return A new instance of fragment MakeAppointment.
+     * @return A new instance of fragment MakeAppointmentFragment.
      */
-    public static MakeAppointment newInstance(String access_token) {
-        MakeAppointment fragment = new MakeAppointment();
+    public static MakeAppointmentFragment newInstance(String access_token) {
+        MakeAppointmentFragment fragment = new MakeAppointmentFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, access_token);
         fragment.setArguments(args);

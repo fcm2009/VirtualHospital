@@ -89,7 +89,7 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="title_activity_update_health_record">Update Health Record</string>
 
-    <!-- Strings related to MakeAppointment -->
+    <!-- Strings related to MakeAppointmentFragment -->
     <string name="choose_doctor_text_view">Choose Doctor:</string>
     <string name="submit_appointment">Submit</string>
     <string name="available">Available</string>

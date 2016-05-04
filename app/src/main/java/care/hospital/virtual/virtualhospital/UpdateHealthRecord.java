@@ -41,6 +41,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 
+import care.hospital.virtual.virtualhospital.models.MedicalReports;
+import care.hospital.virtual.virtualhospital.util.FileAdapter;
 import care.hospital.virtual.virtualhospital.util.UriParser;
 import care.hospital.virtual.virtualhospital.util.VHRestClient;
 import cz.msebera.android.httpclient.Header;

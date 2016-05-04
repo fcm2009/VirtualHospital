@@ -1,4 +1,4 @@
-package care.hospital.virtual.virtualhospital;
+package care.hospital.virtual.virtualhospital.models;
 
 import java.io.File;
 

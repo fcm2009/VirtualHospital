@@ -1,4 +1,4 @@
-package care.hospital.virtual.virtualhospital;
+package care.hospital.virtual.virtualhospital.util;
 
 import android.content.Context;
 import android.graphics.drawable.Icon;
@@ -11,6 +11,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.List;
+
+import care.hospital.virtual.virtualhospital.R;
 
 /**
  * Created by semsem on 27/04/16.

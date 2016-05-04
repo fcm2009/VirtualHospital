@@ -9,7 +9,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 
-public class Appointment extends AppCompatActivity implements AppointmentListFragment.OnFragmentInteractionListener, MakeAppointment.OnFragmentInteractionListener {
+public class Appointment extends AppCompatActivity implements AppointmentListFragment.OnFragmentInteractionListener, MakeAppointmentFragment.OnFragmentInteractionListener {
 
     private String token;
 
@@ -30,7 +30,7 @@ public class Appointment extends AppCompatActivity implements AppointmentListFra
 
     @Override
     public void onFragmentInteraction(Uri uri) {
-        MakeAppointment makeAppointmentFragment = MakeAppointment.newInstance(token);
+        MakeAppointmentFragment makeAppointmentFragment = MakeAppointmentFragment.newInstance(token);
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction MakeAppointmentTransaction = fragmentManager.beginTransaction();
         MakeAppointmentTransaction.replace(android.R.id.content, makeAppointmentFragment);
