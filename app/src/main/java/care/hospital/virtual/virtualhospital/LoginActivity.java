@@ -5,12 +5,14 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -32,7 +34,7 @@ import cz.msebera.android.httpclient.Header;
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity implements OnClickListener {
 
     // UI references.
     private AutoCompleteTextView mUsername;
@@ -45,6 +47,9 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         // Set up the login form.
+        //Toolbar toolbar = (Toolbar) findViewById(R.id.login_toolbar);
+        //setSupportActionBar(toolbar);
+
         mUsername = (AutoCompleteTextView) findViewById(R.id.username);
 
         mPasswordView = (EditText) findViewById(R.id.password);
@@ -125,7 +130,7 @@ public class LoginActivity extends AppCompatActivity {
                 sharedPreferencesEditor.putString("access_token", responseString);
                 sharedPreferencesEditor.apply();
 
-                finish();
+                startActivity(new Intent(LoginActivity.this, Home.class));
             }
             @Override
             public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
@@ -177,6 +182,11 @@ public class LoginActivity extends AppCompatActivity {
             mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
             mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
+    }
+
+    @Override
+    public void onClick(View v) {
+        startActivity(new Intent(this, CreateAccount.class));
     }
 }
 

@@ -75,7 +75,6 @@ public class AppointmentListFragment extends Fragment implements OnClickListener
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        fetchAppointmentsData();
     }
 
     private void fetchAppointmentsData() {
@@ -173,6 +172,7 @@ public class AppointmentListFragment extends Fragment implements OnClickListener
         appointmentsListView.setOnItemClickListener(this);
         layout.findViewById(R.id.makeAppointmentButton).setOnClickListener(this);
 
+        fetchAppointmentsData();
         return layout;
     }
 

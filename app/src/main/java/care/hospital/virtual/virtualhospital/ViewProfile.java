@@ -1,9 +1,16 @@
 package care.hospital.virtual.virtualhospital;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -15,7 +22,7 @@ import com.loopj.android.http.TextHttpResponseHandler;
 import care.hospital.virtual.virtualhospital.util.VHRestClient;
 import cz.msebera.android.httpclient.Header;
 
-public class ViewProfile extends AppCompatActivity implements View.OnClickListener {
+public class ViewProfile extends AppCompatActivity implements View.OnClickListener, NavigationView.OnNavigationItemSelectedListener {
 
     private SharedPreferences profile_info;
     private SharedPreferences.Editor profile_info_editor;
@@ -40,6 +47,18 @@ public class ViewProfile extends AppCompatActivity implements View.OnClickListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_profile);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.viewProfileToolbar);
+        setSupportActionBar(toolbar);
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.view_profile_drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.setDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.view_profile_nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
 
         SharedPreferences tokenPref = getSharedPreferences("token", 0);
         token = tokenPref.getString("access_token", "");
@@ -87,6 +106,37 @@ public class ViewProfile extends AppCompatActivity implements View.OnClickListen
             other_val.setVisibility(View.VISIBLE);
         else
             other_val.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.view_profile_drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+
+        if (id == R.id.profile) {
+
+
+        } else if (id == R.id.appointment) {
+            startActivity(new Intent(this, Appointment.class));
+
+        } else if (id == R.id.health_record) {
+            startActivity(new Intent(this, UpdateHealthRecord.class));
+
+        }
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.view_profile_drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
     }
 
     @Override
